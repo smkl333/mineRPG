@@ -6,6 +6,8 @@ import com.example.randomclass.RandomClassPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -32,6 +34,7 @@ public class ClassAbilityListener implements Listener {
     private final ClassManager classManager;
     private final RandomClassPlugin plugin;
     private final Map<UUID, Long> farmerTeleportCooldowns = new HashMap<>();
+    private final Map<UUID, Long> adventurerRegenFieldCooldowns = new HashMap<>();
     private final Map<UUID, Long> warriorDoubleJumpCooldowns = new HashMap<>();
     private final Map<UUID, Long> warriorArrowStormCooldowns = new HashMap<>();
 
@@ -42,6 +45,7 @@ public class ClassAbilityListener implements Listener {
 
     public void cleanup(UUID uuid) {
         farmerTeleportCooldowns.remove(uuid);
+        adventurerRegenFieldCooldowns.remove(uuid);
         warriorDoubleJumpCooldowns.remove(uuid);
         warriorArrowStormCooldowns.remove(uuid);
     }
@@ -240,15 +244,23 @@ public class ClassAbilityListener implements Listener {
     }
 
     private ItemStack findJobItem(Player player, Material material) {
-        // 모험가는 레벨에 따라 도끼 재질이 변할 수 있으므로 타입 체크를 유연하게 하거나,
-        // 모든 도구 중 job item인 것을 찾음. 여기서는 일단 DIAMOND_AXE, IRON_AXE, NETHERITE_AXE 등을 고려해야
-        // 함.
-        for (ItemStack stack : player.getInventory().getContents()) {
-            if (stack != null && classManager.isJobItem(stack)) {
-                String typeName = stack.getType().name();
-                if (typeName.endsWith("_AXE")) { // 도끼 종류면 오케이
-                    return stack;
+        // 도끼 스킬은 재질이 변할 수 있으므로 _AXE 계열 전체를 허용
+        if (material == Material.DIAMOND_AXE) {
+            for (ItemStack stack : player.getInventory().getContents()) {
+                if (stack != null && classManager.isJobItem(stack)) {
+                    String typeName = stack.getType().name();
+                    if (typeName.endsWith("_AXE")) {
+                        return stack;
+                    }
                 }
+            }
+            return null;
+        }
+
+        // 그 외 스킬은 정확한 재질 일치로 탐색
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack != null && stack.getType() == material && classManager.isJobItem(stack)) {
+                return stack;
             }
         }
         return null;
@@ -317,12 +329,29 @@ public class ClassAbilityListener implements Listener {
             return;
 
         // 전사의 화살(Arrow) 아이템 우클릭 체크
-        if (item.getType() != Material.ARROW)
+        PlayerClass playerClass = classManager.getPlayerClass(player);
+        int level = classManager.getPlayerClassLevel(player);
+
+        // 모험가 재생 필드: 포션 우클릭 시 발동
+        if (item.getType() == Material.POTION && playerClass == PlayerClass.ADVENTURER && level >= 1) {
+            event.setCancelled(true);
+
+            long now = System.currentTimeMillis();
+            long lastUsed = adventurerRegenFieldCooldowns.getOrDefault(player.getUniqueId(), 0L);
+            int cooldownSec = classManager.getAdventurerRegenFieldCooldownSeconds(level);
+            if (now - lastUsed < cooldownSec * 1000L) {
+                return;
+            }
+
+            spawnAdventurerRegenField(player, level);
+            adventurerRegenFieldCooldowns.put(player.getUniqueId(), now);
+            startCooldownDisplay(player, Material.POTION, cooldownSec, "재생 필드");
             return;
-        if (classManager.getPlayerClass(player) != PlayerClass.WARRIOR)
+        }
+
+        if (item.getType() != Material.ARROW || playerClass != PlayerClass.WARRIOR)
             return;
 
-        int level = classManager.getPlayerClassLevel(player);
         if (level < 4)
             return;
 
@@ -400,5 +429,23 @@ public class ClassAbilityListener implements Listener {
 
         player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ARROW_SHOOT, 1.0f, 0.5f);
         player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 1.5f);
+    }
+
+    private void spawnAdventurerRegenField(Player player, int level) {
+        int durationSec = classManager.getAdventurerRegenFieldDurationSeconds(level);
+        int regenAmp = classManager.getAdventurerRegenFieldAmplifier(level);
+        float radius = (float) classManager.getAdventurerRegenFieldRadius(level);
+
+        AreaEffectCloud cloud = player.getWorld().spawn(player.getLocation(), AreaEffectCloud.class);
+        cloud.setParticle(Particle.HEART);
+        cloud.setRadius(radius);
+        cloud.setDuration(durationSec * 20);
+        cloud.setWaitTime(0);
+        cloud.setReapplicationDelay(20);
+        cloud.addCustomEffect(new PotionEffect(PotionEffectType.REGENERATION, 60, regenAmp, false, true), true);
+
+        player.sendMessage(classManager.getMessage("prefix.adventurer", "&a[모험가] ")
+                + ChatColor.GREEN + "재생 필드를 전개했습니다! (" + durationSec + "초, 재생 " + (regenAmp + 1) + ")");
+        player.getWorld().playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BELL_USE, 1.0f, 1.1f);
     }
 }

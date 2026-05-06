@@ -439,6 +439,32 @@ public class ClassManager {
         return mainConfig.getDouble("abilities.adventurer.animal_exp_multiplier", 1.5);
     }
 
+    private int getLevelBasedInt(String path, int level, int fallback) {
+        java.util.List<Integer> values = mainConfig.getIntegerList(path);
+        if (values.isEmpty()) return fallback;
+        int index = Math.max(0, Math.min(level - 1, values.size() - 1));
+        return values.get(index);
+    }
+
+    public int getAdventurerRegenFieldDurationSeconds(int level) {
+        return getLevelBasedInt("abilities.adventurer.regen_field.duration_seconds_levels", level, 6);
+    }
+
+    public int getAdventurerRegenFieldAmplifier(int level) {
+        return getLevelBasedInt("abilities.adventurer.regen_field.amplifier_levels", level, 0);
+    }
+
+    public int getAdventurerRegenFieldCooldownSeconds(int level) {
+        return getLevelBasedInt("abilities.adventurer.regen_field.cooldown_seconds_levels", level, 30);
+    }
+
+    public double getAdventurerRegenFieldRadius(int level) {
+        java.util.List<Double> radii = mainConfig.getDoubleList("abilities.adventurer.regen_field.radius_levels");
+        if (radii.isEmpty()) return 4.0;
+        int index = Math.max(0, Math.min(level - 1, radii.size() - 1));
+        return radii.get(index);
+    }
+
     public int getHighestClassLevel(Player player) {
         int maxLevel = 1;
         for (PlayerClass pClass : PlayerClass.values()) {
@@ -558,6 +584,19 @@ public class ClassManager {
                 axe.setItemMeta(axeMeta);
             }
             safeGiveItem(player, axe);
+
+            int regenDuration = getAdventurerRegenFieldDurationSeconds(level);
+            int regenAmp = getAdventurerRegenFieldAmplifier(level);
+            int regenCooldown = getAdventurerRegenFieldCooldownSeconds(level);
+            ItemStack regenPotion = createJobItem(player, Material.POTION, ChatColor.GREEN + "모험가의 재생 포션", level);
+            org.bukkit.inventory.meta.ItemMeta potionMeta = regenPotion.getItemMeta();
+            java.util.List<String> potionLore = new java.util.ArrayList<>(potionMeta.getLore());
+            potionLore.add(0, ChatColor.GOLD + "[우클릭] " + ChatColor.WHITE + "재생 필드 전개 (쿨타임 " + regenCooldown + "초)");
+            potionLore.add(1, ChatColor.GRAY + "효과: 반경 " + String.format("%.1f", getAdventurerRegenFieldRadius(level)) + "블록, "
+                    + regenDuration + "초, 재생 " + (regenAmp + 1));
+            potionMeta.setLore(potionLore);
+            regenPotion.setItemMeta(potionMeta);
+            safeGiveItem(player, regenPotion);
         } else if (pClass == PlayerClass.MAGE) {
             int wandCooldown = mainConfig.getInt("cooldowns.mage_wand", 30);
             int spellCooldown = mainConfig.getInt("cooldowns.mage_spellbook", 15);
@@ -711,8 +750,8 @@ public class ClassManager {
         }
 
         ItemStack item = new ItemStack(actualMat);
-        // 화살이 아닐 때만(도구일 때만) 모험가 인챈트 적용
-        if (baseMat != Material.ARROW) {
+        // 모험가 도구(괭이/삽/도끼)에만 인챈트 적용
+        if (baseMat == Material.DIAMOND_HOE || baseMat == Material.DIAMOND_SHOVEL || baseMat == Material.DIAMOND_AXE) {
             addFarmerEnchants(item, level);
         }
         return finalizeJobItem(player, item, name, level);

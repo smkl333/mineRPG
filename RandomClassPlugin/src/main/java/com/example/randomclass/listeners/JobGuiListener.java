@@ -209,6 +209,7 @@ public class JobGuiListener implements Listener {
             case ADVENTURER:
                 if (storedLevel < 5)
                     lore.add(ChatColor.DARK_GRAY + "- 약화 I (5레벨에 제거됨)");
+                lore.add(ChatColor.WHITE + "- 재생 포션: 우클릭 시 주변 재생 필드 전개");
                 lore.add(ChatColor.WHITE + "- 특수 채집: 판자/작물 추가 드랍");
                 lore.add(ChatColor.WHITE + "- 농작물/사탕수수 수확 시 경험치 획득");
                 lore.add(ChatColor.WHITE + "- 추가 체력: " + ChatColor.RED + "+" + (storedLevel / 2) + "칸");

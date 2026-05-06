@@ -83,3 +83,13 @@ abilities:
     animal_exp_multiplier: 1.5
     # 포화(포만감) 능력 피격 시 비활성화 쿨타임 (초 단위)
     saturation_cooldown: 10
+    # 재생 필드 스킬 설정 (모험가 전용 포션, Lv1부터 사용 가능)
+    regen_field:
+      # 레벨별 필드 반경(블록) - Lv1~10 순서
+      radius_levels: [3.0, 3.0, 3.5, 3.5, 4.0, 4.0, 4.5, 4.5, 5.0, 5.5]
+      # 레벨별 필드 유지 시간(초) - Lv1~10 순서
+      duration_seconds_levels: [4, 4, 5, 5, 6, 6, 7, 7, 8, 10]
+      # 레벨별 재생 증폭 수치 - Lv1~10 순서 (0=재생 I, 1=재생 II)
+      amplifier_levels: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+      # 레벨별 쿨타임(초) - Lv1~10 순서
+      cooldown_seconds_levels: [45, 44, 43, 42, 40, 38, 36, 34, 32, 30]
