@@ -35,6 +35,8 @@ public class ClassAbilityListener implements Listener {
     private final RandomClassPlugin plugin;
     private final Map<UUID, Long> farmerTeleportCooldowns = new HashMap<>();
     private final Map<UUID, Long> adventurerRegenFieldCooldowns = new HashMap<>();
+    private final Map<UUID, Long> warriorShieldReadyUntil = new HashMap<>();
+    private final Map<UUID, Long> warriorShieldChargeUntil = new HashMap<>();
     private final Map<UUID, Long> warriorDoubleJumpCooldowns = new HashMap<>();
     private final Map<UUID, Long> warriorArrowStormCooldowns = new HashMap<>();
 
@@ -46,6 +48,8 @@ public class ClassAbilityListener implements Listener {
     public void cleanup(UUID uuid) {
         farmerTeleportCooldowns.remove(uuid);
         adventurerRegenFieldCooldowns.remove(uuid);
+        warriorShieldReadyUntil.remove(uuid);
+        warriorShieldChargeUntil.remove(uuid);
         warriorDoubleJumpCooldowns.remove(uuid);
         warriorArrowStormCooldowns.remove(uuid);
     }
@@ -158,6 +162,19 @@ public class ClassAbilityListener implements Listener {
         Player player = (Player) event.getDamager();
         PlayerClass pClass = classManager.getPlayerClass(player);
         int level = classManager.getPlayerClassLevel(player);
+
+        // 전사 방패 돌진 적중 판정: 적중 시 0.5초 기절 + 1초 암흑
+        long now = System.currentTimeMillis();
+        if (pClass == PlayerClass.WARRIOR && level >= 6
+                && now <= warriorShieldChargeUntil.getOrDefault(player.getUniqueId(), 0L)
+                && event.getEntity() instanceof LivingEntity) {
+            LivingEntity target = (LivingEntity) event.getEntity();
+            target.setVelocity(new Vector(0, 0, 0));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10, 10, false, true));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 20, 0, false, true));
+            warriorShieldChargeUntil.remove(player.getUniqueId());
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_ATTACK_KNOCKBACK, 1.0f, 0.8f);
+        }
 
         // [공통] 몬스터(Monster)는 모든 직업이 자유롭게 때릴 수 있음
         if (event.getEntity() instanceof Monster) {
@@ -320,18 +337,44 @@ public class ClassAbilityListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
+        Player player = event.getPlayer();
+        PlayerClass playerClass = classManager.getPlayerClass(player);
+        int level = classManager.getPlayerClassLevel(player);
+        Action action = event.getAction();
+
+        // 전사 방패 돌진 준비/발동 (왼손 장착 필수, Lv6+)
+        if (playerClass == PlayerClass.WARRIOR && level >= 6) {
+            ItemStack offHand = player.getInventory().getItemInOffHand();
+            boolean hasWarriorShield = offHand != null
+                    && offHand.getType() == Material.SHIELD
+                    && classManager.isJobItem(offHand);
+
+            if (hasWarriorShield && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
+                warriorShieldReadyUntil.put(player.getUniqueId(), System.currentTimeMillis() + 3000L);
+            }
+
+            if (hasWarriorShield && (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK)) {
+                long now = System.currentTimeMillis();
+                long readyUntil = warriorShieldReadyUntil.getOrDefault(player.getUniqueId(), 0L);
+                if (now <= readyUntil && player.isBlocking()) {
+                    event.setCancelled(true);
+                    warriorShieldChargeUntil.put(player.getUniqueId(), now + 1000L);
+                    Vector dash = player.getLocation().getDirection().normalize().multiply(1.35).setY(0.2);
+                    player.setVelocity(dash);
+                    player.getWorld().playSound(player.getLocation(), org.bukkit.Sound.ITEM_SHIELD_BLOCK, 1.0f, 1.1f);
+                }
+                return;
+            }
+        }
+
+        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK)
             return;
 
-        Player player = event.getPlayer();
         ItemStack item = event.getItem();
         if (item == null || !classManager.isJobItem(item))
             return;
 
         // 전사의 화살(Arrow) 아이템 우클릭 체크
-        PlayerClass playerClass = classManager.getPlayerClass(player);
-        int level = classManager.getPlayerClassLevel(player);
-
         // 모험가 재생 필드: 포션 우클릭 시 발동
         if (item.getType() == Material.POTION && playerClass == PlayerClass.ADVENTURER && level >= 1) {
             event.setCancelled(true);

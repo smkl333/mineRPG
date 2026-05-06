@@ -88,8 +88,8 @@ abilities:
       # 레벨별 필드 반경(블록) - Lv1~10 순서
       radius_levels: [3.0, 3.0, 3.5, 3.5, 4.0, 4.0, 4.5, 4.5, 5.0, 5.5]
       # 레벨별 필드 유지 시간(초) - Lv1~10 순서
-      duration_seconds_levels: [4, 4, 5, 5, 6, 6, 7, 7, 8, 10]
+      duration_seconds_levels: [4, 4, 5, 5, 6, 6, 7, 7, 8, 8]
       # 레벨별 재생 증폭 수치 - Lv1~10 순서 (0=재생 I, 1=재생 II)
       amplifier_levels: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
       # 레벨별 쿨타임(초) - Lv1~10 순서
-      cooldown_seconds_levels: [45, 44, 43, 42, 40, 38, 36, 34, 32, 30]
+      cooldown_seconds_levels: [30, 29, 28, 27, 26, 25, 24, 23, 22, 20]

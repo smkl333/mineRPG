@@ -187,6 +187,8 @@ public class JobGuiListener implements Listener {
                 }
                 if (storedLevel >= 5)
                     lore.add(ChatColor.GOLD + "- 타격 시 몬스터 이동속도 감소");
+                if (storedLevel >= 6)
+                    lore.add(ChatColor.GOLD + "- 전사의 방패: 방어 후 돌진(기절/암흑)");
                 lore.add("");
                 lore.add(ChatColor.RED + "[제한] 낚시 불가");
                 break;

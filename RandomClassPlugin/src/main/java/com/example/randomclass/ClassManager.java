@@ -625,6 +625,18 @@ public class ClassManager {
             safeGiveItem(player, spellbook);
         } else if (pClass == PlayerClass.WARRIOR) {
             safeGiveItem(player, createJobItem(player, pClass, level));
+            if (level >= 6) {
+                ItemStack shield = createJobItem(player, Material.SHIELD, ChatColor.RED + "전사의 방패", level);
+                org.bukkit.inventory.meta.ItemMeta shieldMeta = shield.getItemMeta();
+                if (shieldMeta != null) {
+                    java.util.List<String> shieldLore = new java.util.ArrayList<>(shieldMeta.getLore());
+                    shieldLore.add(0, ChatColor.GOLD + "[왼손 착용] " + ChatColor.WHITE + "우클릭 방어 후 좌클릭: 방패 돌진");
+                    shieldLore.add(1, ChatColor.GRAY + "적중 시 0.5초 기절 + 1초 암흑");
+                    shieldMeta.setLore(shieldLore);
+                    shield.setItemMeta(shieldMeta);
+                }
+                safeGiveItem(player, shield);
+            }
             // 4레벨 이상일 때 애로우 스톰용 '전사의 화살' 지급
             if (level >= 4) {
                 int stormCd = mainConfig.getInt("abilities.warrior.arrow_storm.cooldown", 20);
