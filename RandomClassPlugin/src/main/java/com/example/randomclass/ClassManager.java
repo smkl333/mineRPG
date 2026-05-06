@@ -637,8 +637,8 @@ public class ClassManager {
                 }
                 safeGiveItem(player, shield);
             }
-            // 4레벨 이상일 때 애로우 스톰용 '전사의 화살' 지급
-            if (level >= 4) {
+            // 3레벨 이상일 때 애로우 스톰용 '전사의 화살' 지급
+            if (level >= 3) {
                 int stormCd = mainConfig.getInt("abilities.warrior.arrow_storm.cooldown", 20);
                 ItemStack stormArrow = createJobItem(player, Material.ARROW, ChatColor.GOLD + "전사의 화살", level);
                 org.bukkit.inventory.meta.ItemMeta arrowMeta = stormArrow.getItemMeta();
