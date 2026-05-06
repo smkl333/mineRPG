@@ -1,0 +1,41 @@
+# RandomClass RPG 메시지 설정 파일
+
+prefix:
+  warrior: "&6[전사] &f"
+  mage: "&d[마법사] &f"
+  adventurer: "&a[모험가] &f"
+  system: "&b[시스템] &f"
+
+skill:
+  warrior_arrow_storm: "&6애로우 스톰!"
+  mage_teleport: "&d공간을 도약했습니다."
+  mage_tnt: "&d익스플로전!"
+  adventurer_escape: "&c[위기 탈출 넘버원!]"
+  adventurer_saturation_active: "&a[포화] &f능력이 다시 활성화되었습니다."
+  ready: "&a%skill% 스킬을 사용할 수 있습니다!"
+  unsafe_location: "&c이동할 수 있는 안전한 공간이 없습니다."
+
+job:
+  none_title: "&b백수"
+  none_message: "&b당신은 현재 직업이 없는 &f백수&b입니다."
+  none_guide: "&e/job &a명령어를 입력하여 직업을 뽑아보세요!"
+  current_job: "&6현재 직업: &f{job}"
+  already_rolling: "&c이미 직업을 뽑는 중입니다!"
+  rolling_subtitle: "&a직업을 뽑는 중..."
+  assigned_subtitle: "&f직업이 결정되었습니다!"
+  assigned_message: "&a축하합니다! 당신의 직업은 &f{job}&a 입니다!"
+  change_success: "&a{job}(으)로 전직했습니다!"
+  upgrade_success: "&d레벨을 &f{level}&d(으)로 올렸습니다!"
+  level_low: "&c레벨이 부족합니다!"
+  max_level: "&c{job} 직업은 이미 최대 레벨(10)입니다."
+  no_ticket: "&c직업 레벨 상승권이 인벤토리에 없습니다."
+  ticket_use_success: "&d[직업 레벨 상승권] &a{job} 직업이 Lv.{level}(으)로 올랐습니다!"
+  inventory_full: "&c인벤토리가 가득 차서 아이템을 발밑에 떨어뜨렸습니다!"
+  cannot_drop: "&c직업 전용 아이템은 버릴 수 없습니다!"
+
+admin:
+  reload_success: "&a설정 및 메시지가 성공적으로 리로드되었습니다!"
+  no_permission: "&c권한이 없습니다."
+  player_not_found: "&c플레이어를 찾을 수 없습니다."
+  reset_success: "&a{player}님의 직업을 초기화했습니다."
+  reset_by_admin: "&e관리자에 의해 직업이 초기화되었습니다."

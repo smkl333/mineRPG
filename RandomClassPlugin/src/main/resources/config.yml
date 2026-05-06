@@ -1,0 +1,85 @@
+# ClassRPG 메인 설정 파일
+
+hunger:
+  # 허기 시스템 활성화 여부 (true/false)
+  enabled: false
+  # 최대 도달할 허기 소모 배율
+  max_multiplier: 1.5
+  # 최대 배율에 도달하는 데 걸리는 플레이 시간 (시간 단위)
+  hours_to_max: 5.0
+  # 허기 진행도 초기화에 필요한 레벨 비용
+  reset_cost: 5
+
+costs:
+  # 다른 직업으로 전직할 때 필요한 레벨 비용
+  job_change: 3
+  # 단계별 업그레이드 비용 (레벨 1, 2, 3... 순서대로의 비용)
+  # 순서대로 Lv1->2, Lv2->3, Lv3->4, Lv4->5, Lv5->6, Lv6->7, Lv7->8, Lv8->9, Lv9->10 비용
+  upgrade: [5, 5, 10, 10, 10, 12, 12, 15, 20]
+
+exp:
+  # 모험가의 레벨당 추가 경험치 획득 비율 (0.1 = 10%)
+  adventurer_multiplier_per_level: 0.1
+
+cooldowns:
+  # 마법사 지팡이(순간이동) 쿨타임 (초)
+  mage_wand: 10
+  # 마법사 마법서(TNT) 쿨타임 (초)
+  mage_spellbook: 20
+  # 모험가 10레벨 죽음 위기 탈출 쿨타임 (초 단위)
+  adventurer_teleport: 300
+  # 마법사 TNT 데미지 배율 (레벨 1부터 10까지 순서대로)
+  # 기본: Lv1-2(0.33), Lv3-4(0.50), Lv5-6(0.66), Lv7-8(0.75), Lv9(0.88), Lv10(1.0)
+  mage_tnt_damage_levels: [0.33, 0.33, 0.50, 0.50, 0.66, 0.66, 0.75, 0.75, 0.88, 1.0]
+
+# 드랍 확률 설정 (0.0 ~ 1.0 사이 값, 1.0 = 100%)
+drops:
+  # 직업 레벨 상승권 드랍 확률 (기본 1%)
+  level_up_ticket_chance: 0.01
+  # 찢어진 상승권 조각 드랍 확률 (기본 5%)
+  torn_ticket_chance: 0.05
+
+# 초기 보상 설정
+initial_reward:
+  # 지급할 아이템 (Minecraft Material 이름)
+  item: "COOKED_BEEF"
+  # 지급할 개수
+  amount: 10
+
+# 클래스별 상세 수치 설정
+abilities:
+  mage:
+    # 마법서 순간이동 거리 (블록 단위)
+    teleport_distance: 10.0
+    # 마법 지팡이 TNT 폭발 대기 시간 (틱 단위, 20틱 = 1초)
+    tnt_fuse_ticks: 40
+    # 마법사 레벨별 스킬 쿨타임 감소 비율 (1.0 = 0% 감소, 0.9 = 10% 감소)
+    # 기본: Lv1(0%), Lv2(10%), Lv4(15%), Lv8(20%) 등
+    cooldown_reduction_levels: [1.0, 1.0, 0.95, 0.9, 0.85, 0.8, 0.8, 0.75, 0.75, 0.75]
+  warrior:
+    # 타격 시 몬스터 둔화 지속 시간 (틱 단위)
+    slow_duration_ticks: 40
+    # 레벨별 공격력 배율 (0.1 = 1.1배, 0.2 = 1.2배, 0.3 = 1.3배)
+    # 순서대로 Lv1 ~ Lv10
+    damage_multipliers: [0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.3]
+    # 더블 점프 설정 (10레벨 전용)
+    double_jump:
+      # 더블 점프 자체 쿨타임 (초 단위)
+      cooldown_seconds: 5
+    # 애로우 스톰 설정 (4레벨 이상 사용 가능)
+    arrow_storm:
+      # 레벨별 화살 데미지 (Lv1~10 순서대로)
+      # 4레벨부터 사용하므로 앞의 3개는 무시되지만 형식을 맞춤
+      damage_levels: [2.0, 3.0, 4.0, 6.0, 6.5, 7.0, 7.5, 8, 9.0, 10.0]
+      # 발사할 화살 개수 (방향)
+      arrow_count: 18
+      # 스킬 쿨타임 (초 단위)
+      cooldown: 20
+  adventurer:
+    # 농작물/사탕수수 수확 시 획득 경험치 범위 (최솟값, 최댓값)
+    harvest_exp_min: 1
+    harvest_exp_max: 3
+    # 동물 사냥 시 경험치 보너스 배율 (1.5 = 50% 추가 드랍)
+    animal_exp_multiplier: 1.5
+    # 포화(포만감) 능력 피격 시 비활성화 쿨타임 (초 단위)
+    saturation_cooldown: 10
