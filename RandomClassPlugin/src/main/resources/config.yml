@@ -16,16 +16,24 @@ costs:
   # 단계별 업그레이드 비용 (레벨 1, 2, 3... 순서대로의 비용)
   # 순서대로 Lv1->2, Lv2->3, Lv3->4, Lv4->5, Lv5->6, Lv6->7, Lv7->8, Lv8->9, Lv9->10 비용
   upgrade: [5, 5, 10, 10, 10, 12, 12, 15, 20]
+  # 각성 능력 해금 시 필요한 레벨 비용
+  awakening_level_cost: 30
 
 exp:
   # 모험가의 레벨당 추가 경험치 획득 비율 (0.1 = 10%)
-  adventurer_multiplier_per_level: 0.1
+  adventurer_multiplier_per_level: 0.05
 
 cooldowns:
-  # 마법사 지팡이(순간이동) 쿨타임 (초)
-  mage_wand: 10
-  # 마법사 마법서(TNT) 쿨타임 (초)
-  mage_spellbook: 20
+  # 마법사 지팡이(TNT) 쿨타임 (초)
+  mage_wand: 20
+  # 마법사 마법서(순간이동) 쿨타임 (초)
+  mage_spellbook: 10
+  # 마법사 TNT 쿨타임 (초)
+  mage_fireball: 15
+  # 마법사 서리 도약 쿨타임 (초)
+  mage_frost_jump: 25
+  # 전사 방패 돌진 쿨타임 (초)
+  warrior_shield: 15
   # 모험가 10레벨 죽음 위기 탈출 쿨타임 (초 단위)
   adventurer_teleport: 300
   # 마법사 TNT 데미지 배율 (레벨 1부터 10까지 순서대로)
@@ -35,9 +43,16 @@ cooldowns:
 # 드랍 확률 설정 (0.0 ~ 1.0 사이 값, 1.0 = 100%)
 drops:
   # 직업 레벨 상승권 드랍 확률 (기본 1%)
-  level_up_ticket_chance: 0.01
-  # 찢어진 상승권 조각 드랍 확률 (기본 5%)
-  torn_ticket_chance: 0.05
+  level_up_ticket_chance: 0.02
+  # 찢어진 상승권 조각 드랍 확률 (기본 10%)
+  torn_ticket_chance: 0.15
+  # 인벤 세이브권 드랍 확률 (기본 3%)
+  inventory_save: 0.01
+  # 동물 드랍 확률 배율 (기본 50%)(농부는 100% 나머지 2개 직업 배율)
+  animal_drop_multiplier: 0.5
+  # 티켓 획득 시 전체 공지 여부 (true/false)
+  announce_ticket_drops: true
+
 
 # 초기 보상 설정
 initial_reward:
@@ -53,43 +68,91 @@ abilities:
     teleport_distance: 10.0
     # 마법 지팡이 TNT 폭발 대기 시간 (틱 단위, 20틱 = 1초)
     tnt_fuse_ticks: 40
+    # 마법사 레벨별 화염구 피해량 (Lv1 ~ Lv10)
+    fireball_damage_levels: [7.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
+    # 화염구 착탄 후 남는 화염 설정
+    fireball_flame_duration_seconds: 4
+    fireball_flame_radius: 2.5
+    fireball_flame_damage: 3
+    # 마법사 서리 도약 설정
+    frost_jump_radius: 6
+    frost_jump_duration_seconds: 6
+    frost_jump_slow_duration_ticks: 40
+    # 서리 도약 도약력 
+    frost_jump_power: 0.3
+    # 서리 도약 둔화 강도 (0.3 = 30% 이동속도 감소)
+    frost_jump_slow_percentage: 0.3
     # 마법사 레벨별 스킬 쿨타임 감소 비율 (1.0 = 0% 감소, 0.9 = 10% 감소)
     # 기본: Lv1(0%), Lv2(10%), Lv4(15%), Lv8(20%) 등
-    cooldown_reduction_levels: [1.0, 1.0, 0.95, 0.9, 0.85, 0.8, 0.8, 0.75, 0.75, 0.75]
+    cooldown_reduction_levels: [1.0, 1.0, 0.95, 0.95, 0.9, 0.85, 0.85, 0.8, 0.8, 0.75]
+    # 각성 능력 설정
+    awakening:
+      # 블랙홀 (Lv.11 or 13): TNT 데미지 증가 및 주변 끌어당김
+      blackhole_damage_multiplier: 1.1
+      blackhole_radius: 10.0
+      blackhole_cooldown_increase_seconds: 0
+      blackhole_pull_strength: 0.5
+      # 원소 폭주 (Lv.12 or 13): 마법서를 왼손에 들 때 발동, 10초간 쿨타임 80% 감소
+      surge_duration_seconds: 10.0
+      surge_cooldown_reduction: 0.85
+      surge_cooldown_seconds: 120.0
   warrior:
     # 타격 시 몬스터 둔화 지속 시간 (틱 단위)
-    slow_duration_ticks: 40
+    slow_duration_ticks: 20
+    # 타격 시 레벨별 둔화율 (0.15 = 15% 감소, 0.2 = 20% 감소)
+    slow_percentage_levels: [0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.2, 0.2]
     # 레벨별 공격력 배율 (0.1 = 1.1배, 0.2 = 1.2배, 0.3 = 1.3배)
     # 순서대로 Lv1 ~ Lv10
     damage_multipliers: [0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.3]
-    # 더블 점프 설정 (10레벨 전용)
+    # 전사 돌진 거리(힘) 배율
+    jump_multiplier: 0.7
+    # 방패 돌진 거리(힘) 배율 (기본 1.5)
+    dash_multiplier: 1
+    # 더블 점프 설정 (8레벨 이상)
     double_jump:
       # 더블 점프 자체 쿨타임 (초 단위)
-      cooldown_seconds: 5
-    # 애로우 스톰 설정 (4레벨 이상 사용 가능)
+      cooldown_seconds: 6
+    # 애로우 스톰 설정 (3레벨 이상 사용 가능)
     arrow_storm:
       # 레벨별 화살 데미지 (Lv1~10 순서대로)
-      # 4레벨부터 사용하므로 앞의 3개는 무시되지만 형식을 맞춤
-      damage_levels: [2.0, 3.0, 6.0, 6.0, 6.5, 7.0, 7.5, 8, 8.5, 9.0]
+      # 3레벨부터 사용하므로 앞의 2개는 무시되지만 형식을 맞춤
+      damage_levels: [2.0, 3.0, 6.0, 7, 8, 8, 9, 9, 10, 12]
       # 발사할 화살 개수 (방향)
       arrow_count: 18
-      # 스킬 쿨타임 (초 단위)
-      cooldown: 20
+      # 레벨별 스킬 쿨타임 (Lv1~10 순서대로)
+      cooldown_levels: [20, 20, 19, 18, 17, 17, 16, 16, 15, 15]
+    # 각성 능력 설정
+    geumgang_reflect_percent: 0.25
+    geumgang_cooldown: 45
+    geumgang_duration_seconds: 5
+    lifesteal_percent: 0.1
+    lifesteal_duration_seconds: 10
   adventurer:
     # 농작물/사탕수수 수확 시 획득 경험치 범위 (최솟값, 최댓값)
-    harvest_exp_min: 1
-    harvest_exp_max: 3
+    harvest_exp_min: 2
+    harvest_exp_max: 5
     # 동물 사냥 시 경험치 보너스 배율 (1.5 = 50% 추가 드랍)
     animal_exp_multiplier: 1.5
     # 포화(포만감) 능력 피격 시 비활성화 쿨타임 (초 단위)
-    saturation_cooldown: 10
-    # 재생 필드 스킬 설정 (모험가 전용 포션, Lv1부터 사용 가능)
+    saturation_cooldown: 25
+    # 재생 필드 스킬 설정 (모험가 전용 포션, Lv.1부터 사용 가능)
     regen_field:
       # 레벨별 필드 반경(블록) - Lv1~10 순서
       radius_levels: [3.0, 3.0, 3.5, 3.5, 4.0, 4.0, 4.5, 4.5, 5.0, 5.5]
       # 레벨별 필드 유지 시간(초) - Lv1~10 순서
-      duration_seconds_levels: [4, 4, 5, 5, 6, 6, 7, 7, 8, 8]
+      duration_seconds_levels: [5, 5, 6, 6, 7, 7, 8, 8, 9, 9]
       # 레벨별 재생 증폭 수치 - Lv1~10 순서 (0=재생 I, 1=재생 II)
-      amplifier_levels: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+      amplifier_levels: [1, 1, 1, 1, 2, 2, 2, 3, 3, 3]
       # 레벨별 쿨타임(초) - Lv1~10 순서
-      cooldown_seconds_levels: [30, 29, 28, 27, 26, 25, 24, 23, 22, 20]
+      cooldown_seconds_levels: [40, 35, 30, 27, 26, 25, 24, 23, 22, 20]
+    # 각성 능력 설정
+    awakening:
+      # 용맹 (Lv.11 or 13): 주변 10m에 데미지 증가 및 피흡 버프를 줌
+      valor_cooldown_seconds: 120
+      valor_duration_seconds: 10
+      valor_radius: 10.0
+      valor_damage_multiplier: 1.2
+      valor_lifesteal_percent: 0.05
+      # 생존 (Lv.12 or 13): 치유 파동 강화 (황금 사과 효과 및 디버프 해제)
+      survival_buff_duration_sec: 5
+      survival_cooldown_increase_sec: 10

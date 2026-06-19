@@ -10,6 +10,8 @@ import com.example.randomclass.listeners.PlayerJoinListener;
 import com.example.randomclass.listeners.BlockBreakListener;
 import com.example.randomclass.listeners.LevelUpTicketListener;
 import com.example.randomclass.listeners.MageAbilityListener;
+import com.example.randomclass.listeners.BossListener;
+import com.example.randomclass.managers.BossManager;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -19,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class RandomClassPlugin extends JavaPlugin {
@@ -27,6 +30,7 @@ public class RandomClassPlugin extends JavaPlugin {
     private JobGuiListener jobGuiListener;
     private ClassAbilityListener classAbilityListener;
     private MageAbilityListener mageAbilityListener;
+    private BossManager bossManager;
     private final java.util.Set<java.util.UUID> rollingPlayers = new java.util.HashSet<>();
 
     @Override
@@ -49,17 +53,41 @@ public class RandomClassPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new LevelUpTicketListener(classManager), this);
         getServer().getPluginManager().registerEvents(mageAbilityListener, this);
 
+        this.bossManager = new BossManager(this);
+        getServer().getPluginManager().registerEvents(new BossListener(bossManager, this), this);
+
+        com.example.randomclass.managers.StatusDisplayManager statusManager = new com.example.randomclass.managers.StatusDisplayManager(this, classManager);
+        getCommand("status").setExecutor(statusManager);
+
         classManager.registerRecipes();
+
+        // 5분마다 (6000틱) 주기적으로 플레이어 캐시 및 데이터 저장
+        new org.bukkit.scheduler.BukkitRunnable() {
+            @Override
+            public void run() {
+                if (classManager != null) {
+                    classManager.saveAllProfiles();
+                }
+            }
+        }.runTaskTimer(this, 6000L, 6000L);
 
         getLogger().info("ClassRPG Plugin has been enabled!");
     }
 
     public ClassAbilityListener getClassAbilityListener() { return classAbilityListener; }
     public MageAbilityListener getMageAbilityListener() { return mageAbilityListener; }
+    public ClassManager getClassManager() { return classManager; }
+    public JobGuiListener getJobGuiListener() { return jobGuiListener; }
 
     @Override
     public void onDisable() {
         rollingPlayers.clear();
+        if (bossManager != null) {
+            bossManager.cleanup();
+        }
+        if (classManager != null) {
+            classManager.saveAllProfiles();
+        }
         getLogger().info("ClassRPG Plugin has been disabled!");
     }
 
@@ -75,11 +103,11 @@ public class RandomClassPlugin extends JavaPlugin {
                     return true;
                 }
                 classManager.reloadConfigs();
-                
-                for (org.bukkit.entity.Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
-                    if (p != null) classManager.applyClassBuffs(p);
+
+                if (bossManager != null) {
+                    bossManager.loadConfig();
                 }
-                
+
                 sender.sendMessage(classManager.getMessage("admin.reload_success", "&aClassRPG 설정 및 데이터가 성공적으로 리로드되었습니다!"));
                 return true;
             }
@@ -101,6 +129,69 @@ public class RandomClassPlugin extends JavaPlugin {
                 player.sendMessage(classManager.getMessage("admin.reset_success", "&a{player}님의 직업을 초기화했습니다.")
                         .replace("{player}", target.getName()));
                 return true;
+            }
+
+            // 보스 관리 명령어
+            if (args.length > 1 && args[0].equalsIgnoreCase("boss")) {
+                if (!player.hasPermission("randomclass.admin")) {
+                    player.sendMessage(classManager.getMessage("admin.no_permission", "&c권한이 없습니다."));
+                    return true;
+                }
+                
+                if (args[1].equalsIgnoreCase("spawn")) {
+                    bossManager.spawnBoss();
+                    player.sendMessage(ChatColor.GREEN + "보스를 스폰했습니다.");
+                } else if (args[1].equalsIgnoreCase("remove")) {
+                    bossManager.cleanup();
+                    player.sendMessage(ChatColor.YELLOW + "보스를 제거했습니다.");
+                } else {
+                    player.sendMessage(ChatColor.RED + "사용법: /class boss <spawn|remove>");
+                }
+                return true;
+            }
+
+            // 아이템 지급 명령어
+            if (args.length > 0) {
+                String sub = args[0].toLowerCase();
+                if (sub.equals("levelupbook") || sub.equals("leveluppiece") || sub.equals("awakening") || sub.equals("invensave")) {
+                    if (!player.hasPermission("randomclass.admin")) {
+                        player.sendMessage(classManager.getMessage("admin.no_permission", "&c권한이 없습니다."));
+                        return true;
+                    }
+
+                    int amount = 1;
+                    if (args.length > 1) {
+                        try {
+                            amount = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            player.sendMessage(ChatColor.RED + "올바른 수량을 입력해주세요.");
+                            return true;
+                        }
+                    }
+
+                    ItemStack itemToGive = null;
+                    String itemName = "";
+                    if (sub.equals("levelupbook")) {
+                        itemToGive = classManager.createLevelUpTicket();
+                        itemName = "직업 레벨 상승권";
+                    } else if (sub.equals("leveluppiece")) {
+                        itemToGive = classManager.createTornTicket();
+                        itemName = "직업 레벨 상승권 조각";
+                    } else if (sub.equals("awakening")) {
+                        itemToGive = classManager.createAwakeningTicket();
+                        itemName = "각성권";
+                    } else if (sub.equals("invensave")) {
+                        itemToGive = classManager.createInventorySaveTicket();
+                        itemName = "인벤토리 세이브권";
+                    }
+
+                    if (itemToGive != null) {
+                        itemToGive.setAmount(amount);
+                        player.getInventory().addItem(itemToGive);
+                        player.sendMessage(ChatColor.GREEN + itemName + " " + amount + "개를 지급했습니다.");
+                    }
+                    return true;
+                }
             }
 
             PlayerClass pClass = classManager.getPlayerClass(player);
@@ -170,10 +261,22 @@ public class RandomClassPlugin extends JavaPlugin {
         if (command.getName().equalsIgnoreCase("class")) {
             if (args.length == 1) {
                 completions.add("reload");
-                if (sender.hasPermission("randomclass.admin")) completions.add("reset");
+                if (sender.hasPermission("randomclass.admin")) {
+                    completions.add("reset");
+                    completions.add("boss");
+                    completions.add("levelupbook");
+                    completions.add("leveluppiece");
+                    completions.add("awakening");
+                    completions.add("invensave");
+                }
             } else if (args.length == 2 && args[0].equalsIgnoreCase("reset")) {
                 for (Player p : org.bukkit.Bukkit.getOnlinePlayers()) {
                     if (p != null) completions.add(p.getName());
+                }
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("boss")) {
+                if (sender.hasPermission("randomclass.admin")) {
+                    completions.add("spawn");
+                    completions.add("remove");
                 }
             }
         }

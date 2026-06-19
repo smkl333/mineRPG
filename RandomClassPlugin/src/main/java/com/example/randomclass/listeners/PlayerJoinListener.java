@@ -26,14 +26,14 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        // 플레이어의 모든 직업 레벨 데이터를 1로 초기화 (yml에 기록용)
-        classManager.initializePlayerLevels(player);
+        // 플레이어의 프로필 캐시 로드 (및 필요 시 yml 초기화)
+        classManager.loadPlayerProfile(player);
 
         PlayerClass pClass = classManager.getPlayerClass(player);
 
         if (pClass == PlayerClass.NONE) {
             player.sendMessage(classManager.getMessage("job.none_message", "&b당신은 현재 직업이 없는 &f백수&b입니다."));
-            player.sendMessage(classManager.getMessage("job.none_guide", "&e/job &a명령어를 입력하여 직업을 뽑아보세요!"));
+            player.sendMessage(classManager.getMessage("job.none_guide", "&e/job &a을 입력하여 직업을 뽑아보세요!"));
             player.setGameMode(org.bukkit.GameMode.ADVENTURE);
         } else {
             player.sendMessage(classManager.getMessage("job.current_job", "&6현재 직업: &f{job}")
@@ -69,9 +69,11 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         java.util.UUID uuid = player.getUniqueId();
-        
+
         classManager.cleanupPlayerData(player);
-        if (plugin.getClassAbilityListener() != null) plugin.getClassAbilityListener().cleanup(uuid);
-        if (plugin.getMageAbilityListener() != null) plugin.getMageAbilityListener().cleanup(uuid);
+        if (plugin.getClassAbilityListener() != null)
+            plugin.getClassAbilityListener().cleanup(uuid);
+        if (plugin.getMageAbilityListener() != null)
+            plugin.getMageAbilityListener().cleanup(uuid);
     }
 }

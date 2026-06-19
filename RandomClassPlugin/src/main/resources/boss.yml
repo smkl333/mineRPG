@@ -1,0 +1,40 @@
+bosses:
+  giant_zombie:
+    enabled: true
+    name: "&c거대좀비"
+    health: 750.0
+    damage: 12.0
+    # 공격 쿨타임 (초)
+    attack_cooldown: 2.0
+    # 당기기 스킬 쿨타임 (초)
+    pull_skill_cooldown: 15
+    # 당기기 스킬 반경 (블록)
+    pull_skill_radius: 20.0
+    # 어그로 리셋 반경 (블록)
+    reset_radius: 100.0
+    # 자동 리스폰 시간 (분 단위)
+    respawn_time_minutes: 15
+    # 스폰 위치
+    spawn_location:
+      world: "world"
+      x: 1000
+      y: 140
+      z: 1000
+    # 피흡 비율 (0.25 = 25%)
+    lifesteal_ratio: 2.0
+    # 광폭화 설정
+    berserk:
+      # 발동 체력 비율 (0.3 = 30%)
+      trigger_health_ratio: 0.3
+      # 광폭화 시 피흡 비율 (0.5 = 50%)
+      lifesteal_ratio: 5.0
+      # 광폭화 시 이름 접두사
+      name_prefix: "&4[광폭화] "
+      # 광폭화 시 공격 쿨타임 (초)
+      attack_cooldown: 1.5
+      # 광폭화 시 이동속도 보너스 (기본 0.25에서 추가될 값)
+      speed_bonus: 0.03
+      # 광폭화 시 공격력 보너스
+      damage_bonus: 3.0
+    # 보스 처치 시 경험치 배율 (일반 좀비의 N배)
+    exp_multiplier: 200.0
