@@ -2,6 +2,7 @@
 **/target/
 **/*.class
 **/*.jar
+!/.class/
 
 # IDE specific files
 .idea/
